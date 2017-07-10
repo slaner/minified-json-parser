@@ -1,5 +1,5 @@
-# ÁßÃ¸µÈ Å°-°ª ½Ö ¿ä¼Ò
-Å×½ºÆ®¿¡ »ç¿ëµÈ json µ¥ÀÌÅÍ
+# ì¤‘ì²©ëœ í‚¤-ê°’ ìŒ ìš”ì†Œ
+í…ŒìŠ¤íŠ¸ì— ì‚¬ìš©ëœ json ë°ì´í„°
 
 **Raw source**:
 
@@ -22,7 +22,7 @@
 
 **Results**:
 
-[Test Result Image](https://oss.navercorp.com/UGC-Xamarin/minified-json-parser/blob/master/test-nested-kvpair/result.png)
+[Test Result Image](https://oss.navercorp.com/UGC-Xamarin/minified-json-parser/raw/master/test-nested-kvpair/result.png)
 
 **Test Source codes**:
 
