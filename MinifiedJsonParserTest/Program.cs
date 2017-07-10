@@ -301,7 +301,8 @@ namespace MinifiedJsonParserTest {
     class Program {
         //const string TestData = "{\"name\":\"Hye won, Hwang\",\"age\":25,\"hasJob\":true,\"isIntern\":true,\"isEmployeed\":false,\"graduated\":false,\"grade\":3,\"studentNo\":\"52121736\",\"department\":{\"location\":\"Cheon-an\",\"name\":\"Dankook University\",\"major\":\"Computer Science\"},\"last_score\":[{\"Network Programming\":\"A+\",\"Advanced Database\":\"B\",\"Software Architecture\":\"A\",\"Algorithm\":\"C+\",\"Operating System\":\"C+\",\"Programming I\":\"B\",\"Computer Network\":\"C\",\"Overall\":[\"A+\",\"A\",\"B\",\"B\",\"C+\",\"C+\",\"C\"],\"Adjusted\":[\"B+\",\"B\",\"B\",\"B\",\"B\",\"B\",\"B\"]},[\"no\",\"yes\",\"ok\",\"cancel\"]]}";
         //const string TestData = "{\"name\":{\"first\":\"hye won\",\"last\":\"hwang\",\"root\":{\"alias\":\"chang-won\",\"name\":\"hwang\"}}}";
-        const string TestData = "{\"name\":\"Apple 15.4 MacBook Pro Retina\",\"price\":3490000,\"cpu\":\"Intel 7th Gen 2.9GHz Quadcore processor, up to 3.9GHz with TurboBoost\",\"mem\":\"16GB LPDDR3 2,133MHz RAM\",\"storage\":\"512GB SSD\",\"gpu\":\"Radeon Pro 560 4GB VRAM\",\"ports\":\"4x Thunderbolt 3 port\",\"comments\":\"역시 애플껀 비싸...\"}";
+        //const string TestData = "{\"name\":\"Apple 15.4 MacBook Pro Retina\",\"price\":3490000,\"cpu\":\"Intel 7th Gen 2.9GHz Quadcore processor, up to 3.9GHz with TurboBoost\",\"mem\":\"16GB LPDDR3 2,133MHz RAM\",\"storage\":\"512GB SSD\",\"gpu\":\"Radeon Pro 560 4GB VRAM\",\"ports\":\"4x Thunderbolt 3 port\",\"comments\":\"역시 애플껀 비싸...\"}";
+        const string TestData = "{\"name\":{\"first\":\"hye won\",\"last\":\"hwang\",\"root\":{\"alias\":\"chang-won\",\"name\":\"hwang\"},\"next element\":\"this is a value\",\"another\":\"value\"},\"oh....?\":\"hello\"}";
         static void Main(string[] args) {
             JsonMap map = MinifiedJson.Parse(TestData);
             Inspect(map);

@@ -10,13 +10,16 @@
             "root":{
                 "alias":"chang-won",
                 "name":"hwang"
-            }
-        }
+            },
+            "next element":"this is a value",
+            "another":"value"
+        },
+        "oh....?":"hello"
     }
 
 **Minified source**:
 
-`{"name":{"first":"hye won","last":"hwang","root":{"alias":"chang-won","name":"hwang"}}}`
+`{"name":{"first":"hye won","last":"hwang","root":{"alias":"chang-won","name":"hwang"},"next element":"this is a value","another":"value"},"oh....?":"hello"}`
 
 ----------
 
@@ -26,7 +29,7 @@
 
 **Test Source codes**:
 
-    const string TestData = "{\"name\":{\"first\":\"hye won\",\"last\":\"hwang\",\"root\":{\"alias\":\"chang-won\",\"name\":\"hwang\"}}}";
+    const string TestData = "{\"name\":{\"first\":\"hye won\",\"last\":\"hwang\",\"root\":{\"alias\":\"chang-won\",\"name\":\"hwang\"},\"next element\":\"this is a value\",\"another\":\"value\"},\"oh....?\":\"hello\"}";
     static void Main(string[] args) {
         JsonMap map = MinifiedJson.Parse(TestData);
         Inspect(map);
