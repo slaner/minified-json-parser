@@ -35,11 +35,16 @@ namespace UGCXamarin.Json {
         /// 배열 값입니다.
         /// </summary>
         Array,
+        /// <summary>
+        /// null 값입니다.
+        /// </summary>
+        NullReference,
     }
     static class Extensions {
         public static JsonValueType GetValueType(this char c) {
             if (c == '-' || char.IsDigit(c)) return JsonValueType.Decimal;
             if (c == 't' || c == 'f') return JsonValueType.Boolean;
+            if (c == 'n') return JsonValueType.NullReference;
             if (c == '"') return JsonValueType.String;
             if (c == '{') return JsonValueType.KeyValuePair;
             if (c == '[') return JsonValueType.Array;
@@ -125,6 +130,10 @@ namespace MinifiedJsonParserTest {
 
     static class MinifiedJson {
         /// <summary>
+        /// null 값을 나타내는 문자열입니다.
+        /// </summary>
+        const string NullReferenceString = "null";
+        /// <summary>
         /// 문자열을 나타내는 문자입니다.
         /// </summary>
         const char StringIndicator = '"';
@@ -182,7 +191,12 @@ namespace MinifiedJsonParserTest {
 
             object value;
             JsonValueType valueType = s[p].GetValueType();
-            if (valueType == JsonValueType.String) {
+            if (valueType == JsonValueType.NullReference) {
+                value = __getPropertyPrimitiveValue(s, isArrayElement, p, out p_new);
+                if (!string.Equals(value, NullReferenceString)) throw new InvalidJsonFormatException($"value starts with 'n', but not \"{NullReferenceString}\"");
+                return new JsonElement(name, null);
+            }
+            else if (valueType == JsonValueType.String) {
                 value = __getPropertyStringValue(s, p, out p_new);
                 return new JsonElement(name, value);
             } else if (valueType == JsonValueType.Boolean) {
@@ -213,39 +227,58 @@ namespace MinifiedJsonParserTest {
         }
         static object[] __internalParseArray(string s, int p, out int p_new) {
             List<object> array = new List<object>();
+
+            // check empty array;
+            if (s[p] == EndOfArray) {
+                p_new = p + 1;
+                return array.ToArray();
+            }
             string test = s.Substring(p);
 
+            JsonMap map = null;
             object value = null;
-            bool keyValueMode = false;
             for (;;) {
-                if (s[p] == ']') break;
-                if (s[p] == '}') keyValueMode = false;
+                JsonValueType valueType = s[p].GetValueType();
+                if (valueType == JsonValueType.NullReference) {
+                    value = __getPropertyPrimitiveValue(s, true, p, out p_new);
+                    if (!string.Equals(value, NullReferenceString)) throw new InvalidJsonFormatException($"value starts with 'n', but not \"{NullReferenceString}\"");
+                    value = null;
+                } else if (valueType == JsonValueType.Array)
+                    value = __internalParseArray(s, p + 1, out p);
+                else if (valueType == JsonValueType.KeyValuePair) {
+                    map = new JsonMap();
+                    JsonElement child = null;
 
-                if (keyValueMode)
-                    value = __internalParseWorker(s, true, p, out p);
-                else {
-                    JsonValueType valueType = s[p].GetValueType();
-                    if (valueType == JsonValueType.Array)
-                        value = __internalParseArray(s, p + 1, out p);
-                    else if (valueType == JsonValueType.KeyValuePair) {
-                        value = __internalParseWorker(s, true, p, out p);
-                        keyValueMode = true;
-                    } else if (valueType == JsonValueType.String)
-                        value = __getPropertyStringValue(s, p, out p);
-                    else if (valueType == JsonValueType.Boolean)
-                        value = bool.Parse(__getPropertyPrimitiveValue(s, true, p, out p));
-                    else if (valueType == JsonValueType.Decimal)
-                        value = decimal.Parse(__getPropertyPrimitiveValue(s, true, p, out p));
-                    else throw new InvalidJsonFormatException($"Unknown value type: '{s[p]}'");
-                }
+                    for (;;) {
+                        child = __internalParseWorker(s, true, p, out p);
+                        if (child == null) break;
+
+                        map.Add(child.Name, child.Value);
+
+                        if (s[p] == EndOfBlock) break;
+                        if (s[p] == ElementSeparator) p++;
+                    }
+
+                    if (s[p++] != EndOfBlock) throw new InvalidJsonFormatException($"Traverse finished, but s[p++] != '{EndOfBlock}'");
+                    value = map;
+                } else if (valueType == JsonValueType.String)
+                    value = __getPropertyStringValue(s, p, out p);
+                else if (valueType == JsonValueType.Boolean)
+                    value = bool.Parse(__getPropertyPrimitiveValue(s, true, p, out p));
+                else if (valueType == JsonValueType.Decimal)
+                    value = decimal.Parse(__getPropertyPrimitiveValue(s, true, p, out p));
+                else throw new InvalidJsonFormatException($"Unknown value type: '{s[p]}'");
 
                 array.Add(value);
+                if (s[p] == ElementSeparator) {
+                    p++;
+                    continue;
+                }
                 if (s[p] == EndOfArray) break;
-
-                p++;
+                throw new InvalidJsonFormatException($"Invalid position of character '{s[p]}'");
             }
 
-            p_new = p;
+            p_new = p + 1;
             return array.ToArray();
         }
         static string __getPropertyPrimitiveValue(string s, bool isArrayElement, int p, out int p_new) {
@@ -299,10 +332,10 @@ namespace MinifiedJsonParserTest {
     }
 
     class Program {
-        //const string TestData = "{\"name\":\"Hye won, Hwang\",\"age\":25,\"hasJob\":true,\"isIntern\":true,\"isEmployeed\":false,\"graduated\":false,\"grade\":3,\"studentNo\":\"52121736\",\"department\":{\"location\":\"Cheon-an\",\"name\":\"Dankook University\",\"major\":\"Computer Science\"},\"last_score\":[{\"Network Programming\":\"A+\",\"Advanced Database\":\"B\",\"Software Architecture\":\"A\",\"Algorithm\":\"C+\",\"Operating System\":\"C+\",\"Programming I\":\"B\",\"Computer Network\":\"C\",\"Overall\":[\"A+\",\"A\",\"B\",\"B\",\"C+\",\"C+\",\"C\"],\"Adjusted\":[\"B+\",\"B\",\"B\",\"B\",\"B\",\"B\",\"B\"]},[\"no\",\"yes\",\"ok\",\"cancel\"]]}";
         //const string TestData = "{\"name\":{\"first\":\"hye won\",\"last\":\"hwang\",\"root\":{\"alias\":\"chang-won\",\"name\":\"hwang\"}}}";
         //const string TestData = "{\"name\":\"Apple 15.4 MacBook Pro Retina\",\"price\":3490000,\"cpu\":\"Intel 7th Gen 2.9GHz Quadcore processor, up to 3.9GHz with TurboBoost\",\"mem\":\"16GB LPDDR3 2,133MHz RAM\",\"storage\":\"512GB SSD\",\"gpu\":\"Radeon Pro 560 4GB VRAM\",\"ports\":\"4x Thunderbolt 3 port\",\"comments\":\"역시 애플껀 비싸...\"}";
-        const string TestData = "{\"name\":{\"first\":\"hye won\",\"last\":\"hwang\",\"root\":{\"alias\":\"chang-won\",\"name\":\"hwang\"},\"next element\":\"this is a value\",\"another\":\"value\"},\"oh....?\":\"hello\"}";
+        //const string TestData = "{\"name\":{\"first\":\"hye won\",\"last\":\"hwang\",\"root\":{\"alias\":\"chang-won\",\"name\":\"hwang\"},\"next element\":\"this is a value\",\"another\":\"value\"},\"oh....?\":\"hello\"}";
+        const string TestData = "{\"name\":\"Hye won, Hwang\",\"age\":25,\"hasJob\":true,\"isIntern\":true,\"isEmployeed\":false,\"graduated\":false,\"grade\":3,\"studentNo\":\"52121736\",\"department\":{\"location\":\"Cheon-an\",\"name\":\"Dankook University\",\"major\":\"Computer Science\"},\"last_score\":[{\"Network Programming\":\"A+\",\"Advanced Database\":\"B\",\"Software Architecture\":\"A\",\"Algorithm\":\"C+\",\"Operating System\":\"C+\",\"Programming I\":\"B\",\"Computer Network\":\"C\",\"Overall\":[\"A+\",\"A\",\"B\",\"B\",\"C+\",\"C+\",\"C\"],\"Adjusted\":[\"B+\",\"B\",\"B\",\"B\",\"B\",\"B\",\"B\"]},[\"no\",\"yes\",\"ok\",\"cancel\"]]}";
         static void Main(string[] args) {
             JsonMap map = MinifiedJson.Parse(TestData);
             Inspect(map);
@@ -321,5 +354,6 @@ namespace MinifiedJsonParserTest {
                 Inspect(map, depth + 1);
             } else Console.WriteLine("{0}", pair.Value);
         }
+
     }
 }
