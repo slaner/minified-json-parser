@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>netstandard1.0</TargetFramework>
+    <AssemblyName>UGCXamarin.Utils.Json</AssemblyName>
+    <RootNamespace>UGCXamarin.Utils.Json</RootNamespace>
+    <Authors>UGCXamarin, Hye won, Hwang.</Authors>
+    <Company>UGCXamarin</Company>
+    <Description>Minified Json Parser Library</Description>
+    <ApplicationIcon />
+    <OutputTypeEx>library</OutputTypeEx>
+    <StartupObject />
+  </PropertyGroup>
+
+</Project>
